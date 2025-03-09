@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ref } from "vue";
 
@@ -8,18 +9,22 @@ async function change(e: any) {
   const val = e.target.checked;
   await getCurrentWindow().setAlwaysOnTop(val);
 }
-function changeFile(e: any) {
-  recivice(e.target?.files);
+
+async function changeFile(e: any) {
+  await recivice(e.target?.files);
   // 修复同一文件无法二次上传的问题
   e.target.value = null;
 }
-function dropFile(e: DragEvent) {
-  recivice(e.dataTransfer?.files);
+
+async function dropFile(e: DragEvent) {
+  await recivice(e.dataTransfer?.files);
 }
 
-function recivice(files: FileList | undefined) {
+async function recivice(files: FileList | undefined) {
   if (files) {
-    file.value = files[0].name;
+    const f = files[0];
+    file.value = f.name;
+    await invoke("receive_file", { file: convertFileSrc(f) });
   }
 }
 </script>
