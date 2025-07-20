@@ -13,8 +13,10 @@
     "windows": [
       {
         "title": "p2",
-        "width": 800,
-        "height": 600
+        "width": 600,
+        "height": 48,
+        "decorations": false,
+        "center": true
       }
     ],
     "security": {
