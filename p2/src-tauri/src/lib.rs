@@ -5,6 +5,7 @@ use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut}
 mod log;
 mod preluad;
 mod result;
+mod search;
 mod window;
 
 use crate::preluad::*;
