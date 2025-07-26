@@ -1,4 +1,4 @@
-use tauri::menu::{Menu, MenuItem};
+use tauri::menu::{MenuBuilder, MenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
 
@@ -10,6 +10,8 @@ mod window;
 
 use crate::preluad::*;
 use crate::window::*;
+
+const NAME_MAIN_WINDOW: &str = "main";
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -38,15 +40,19 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-fn setup_main_window(app: &tauri::App) -> Result<()> {
-    app.handle().setup_main_window()?;
+fn setup_main_window(_app: &tauri::App) -> Result<()> {
+    //app.handle().setup_main_window()?;
     Ok(())
 }
 
 fn setup_trayicon(app: &tauri::App) -> Result<()> {
     let show = MenuItem::with_id(app, "menu_show", "显示", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "menu_quit", "退出", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&show, &quit])?;
+    let menu = MenuBuilder::with_id(app, "tray_menu")
+        .item(&show)
+        .separator()
+        .item(&quit)
+        .build()?;
 
     let _ = TrayIconBuilder::new()
         .icon(

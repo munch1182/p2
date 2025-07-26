@@ -5,7 +5,7 @@ import { Command, CommandInput } from "@/components/ui/command";
 <template>
   <main>
     <Command>
-      <CommandInput />
+      <CommandInput :class="'text-2xl'" />
     </Command>
   </main>
 </template>

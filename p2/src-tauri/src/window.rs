@@ -1,8 +1,6 @@
 use tauri::{Manager, WebviewWindow};
 
-use crate::preluad::*;
-
-const NAME_MAIN_WINDOW: &str = "main";
+use crate::{preluad::*, NAME_MAIN_WINDOW};
 
 pub trait WindowExt {
     fn get_window(&self, name: &str) -> Result<WebviewWindow>;
@@ -14,7 +12,7 @@ pub trait WindowExt {
     fn hide_main(&self) -> Result<()> {
         self.hide_window(NAME_MAIN_WINDOW)
     }
-    fn setup_main_window(&self) -> Result<()> {
+    fn _setup_main_window(&self) -> Result<()> {
         let window = self.get_main()?;
         window.set_focus()?;
         window.set_always_on_top(true)?;

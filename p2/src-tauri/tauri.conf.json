@@ -14,9 +14,13 @@
       {
         "title": "p2",
         "width": 600,
-        "height": 48,
+        "height": 57,
         "decorations": false,
-        "center": true
+        "center": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "backgroundColor": "#00000000",
+        "transparent": true
       }
     ],
     "security": {
