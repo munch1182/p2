@@ -1,6 +1,6 @@
 use tauri::{Manager, WebviewWindow};
 
-use crate::{preluad::*, NAME_MAIN_WINDOW};
+use crate::{err, preluad::*, NAME_MAIN_WINDOW};
 
 pub trait WindowExt {
     fn get_window(&self, name: &str) -> Result<WebviewWindow>;
@@ -28,7 +28,7 @@ impl WindowExt for tauri::AppHandle {
     fn get_window(&self, name: &str) -> Result<WebviewWindow> {
         Ok(self
             .get_webview_window(name)
-            .ok_or_else(|| Err::Custom(format!("Failed to get window {}", name)))?)
+            .ok_or_else(|| err!("window not found: {name}"))?)
     }
 
     fn show_window(&self, name: &str, always_on_top: bool) -> Result<()> {

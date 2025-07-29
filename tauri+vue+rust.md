@@ -54,7 +54,8 @@ module.exports = {
       "alwaysOnTop": true, // 窗口置顶
       "skipTaskbar": true, // 隐藏任务栏图标
       "backgroundColor": "#00000000", // 透明背景
-      "transparent": true // 透明窗口 // 比如界面圆角时，如果设备较差或者启动较长，会先显示窗口的直角，再切换的页面的圆角，所以需要透明窗口
+      "transparent": true, // 透明窗口 // 比如界面圆角时，如果设备较差或者启动较长，会先显示窗口的直角，再切换的页面的圆角，所以需要透明窗口
+      "resizable": false // 禁用窗口大小调整
     }
   }
 }
