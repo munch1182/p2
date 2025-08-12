@@ -13,6 +13,9 @@ pub enum Err {
     #[error("Global shortcut error: {0}")]
     GlobalShortcut(#[from] tauri_plugin_global_shortcut::Error),
 
+    #[error("Io error: {0}")]
+    Io(#[from] std::io::Error),
+
     #[error("Custom err: {0}")]
     Custom(String),
 }

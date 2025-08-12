@@ -1,4 +1,7 @@
+#[allow(dead_code)]
 use crate::preluad::*;
+mod search;
+
 pub struct Search;
 
 impl Search {

@@ -1,7 +1,11 @@
+#![allow(unused)]
+
 mod command;
+mod plugin;
 mod preluad;
 mod search;
 mod sys;
+mod utils;
 
 use crate::command::*;
 use crate::preluad::*;

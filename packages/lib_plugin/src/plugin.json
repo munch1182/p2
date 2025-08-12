@@ -1,0 +1,13 @@
+{
+  "name": "plugin_adb_connector",
+  "title": "ADB Connector",
+  "icon": "../adb.png",
+  "words": ["android"],
+  "version": "0.1.0",
+  "window": "../adb",
+  "libs": "../adb",
+  "window_info": {
+    "width": 800,
+    "height": 600
+  }
+}

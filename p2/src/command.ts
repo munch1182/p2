@@ -15,4 +15,14 @@ export class Command {
   static log(str: string): Promise<void> {
     return invoke("log", { str });
   }
+
+  static getDefaultsCommand(): Promise<
+    {
+      id: number;
+      name: string;
+      value: string;
+    }[]
+  > {
+    return invoke("get_defaults_command");
+  }
 }
