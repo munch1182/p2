@@ -1,0 +1,19 @@
+[package]
+name = "libcommon"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0"
+log = "0.4"
+macro_timer = { path = "./macro_timer" }
+macro_logiferr = { path = "./macro_logiferr" }
+macro_log = { path = "./macro_log" }
+colored = "3.0"
+crossbeam-channel = "0.5"
+chrono = "0.4"
+tokio = { version = "1.47", optional = true }
+
+[features]
+logfile = []
+logfile_default = ["logfile", "tokio"]
