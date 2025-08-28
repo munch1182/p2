@@ -109,13 +109,11 @@ impl syn::parse::Parse for Args {
             }
         }
         // 如果只有一个参数，则认为是dir
-        if p2 == None && p1 != None {
-            Ok(Self {
-                task: None,
-                dir: p1,
-            })
+        let (task, dir) = if p2 == None && p1 != None {
+            (None, p1)
         } else {
-            Ok(Self { task: p1, dir: p2 })
-        }
+            (p1, p2)
+        };
+        Ok(Args { task, dir })
     }
 }

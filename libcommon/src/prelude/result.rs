@@ -59,6 +59,8 @@ impl<T> ErrMapperExt<T> for std::thread::Result<T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::log::log_setup;
+
     use super::*;
 
     #[derive(Debug)]
@@ -76,6 +78,7 @@ mod tests {
 
     #[test]
     fn test_ignore_value_err_by_log() -> Result<()> {
+        log_setup();
         let err: Result<()> = Err(newerr!("realy error"));
         err.ignore_value_err_by_log();
         Ok(())

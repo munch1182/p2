@@ -21,3 +21,21 @@ impl PrettyStringExt for Command {
         format!("{} {}", program, args.join(" "))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use log::info;
+
+    use crate::log::log_setup;
+
+    use super::*;
+
+    #[test]
+    fn test_command() {
+        log_setup();
+        let mut cmd = Command::new("ls");
+        cmd.args(&["-l", "-a"]);
+        info!("{}", cmd.to_string_pretty());
+        assert_eq!(cmd.to_string_pretty(), "ls -l -a");
+    }
+}

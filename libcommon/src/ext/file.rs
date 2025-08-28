@@ -1,5 +1,9 @@
 use crate::prelude::Result;
-use std::{fs, io::Write, path::Path};
+use std::{
+    fs,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 /**
  * 追加写入文件
@@ -21,6 +25,31 @@ impl<P: AsRef<Path>> WriteAppendExt for P {
             .open(path)?;
         file.write_all(buf)?;
         Ok(())
+    }
+}
+
+pub trait PathJoinExt {
+    fn join_all<P: AsRef<Path>>(self, path: &[P]) -> PathBuf;
+}
+
+impl PathJoinExt for &Path {
+    ///
+    /// ```rust
+    /// use libcommon::ext::PathJoinExt;
+    /// use std::path::Path;
+    /// fn main(){
+    ///     let path = Path::new("\\tmp\\aaa").join_all(&["b", "a"]);
+    ///     println!("{:?}", path);
+    ///     assert_eq!(path, Path::new("/tmp/aaa/b/a"));
+    /// }
+    /// ```
+    ///
+    fn join_all<P: AsRef<Path>>(self, path: &[P]) -> PathBuf {
+        let mut buf = self.to_path_buf();
+        for p in path {
+            buf.push(p.as_ref());
+        }
+        buf
     }
 }
 
@@ -63,5 +92,17 @@ impl<P: AsRef<Path>> FileDirCreateExt for P {
         }
         fs::create_dir_all(path)?;
         Ok(self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ext() {
+        let path = Path::new("\\tmp\\aaa").join_all(&["b", "a"]);
+        println!("{:?}", path);
+        assert_eq!(path, Path::new("/tmp/aaa/b/a"));
     }
 }

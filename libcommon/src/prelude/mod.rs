@@ -8,17 +8,17 @@ pub use macro_timer::timer;
 
 #[cfg(test)]
 mod tests {
-    use crate::newerr;
-
     use super::*;
+    use crate::{log::log_setup, newerr};
 
     #[test]
-    fn test_macro() -> std::io::Result<()> {
-        Ok(())
+    fn test_macro() {
+        let _ = macro_result();
     }
 
     #[logiferr]
     fn macro_result() -> Result<()> {
-        Err(newerr!("test macro result"))
+        log_setup();
+        Err(newerr!("test macro result str"))
     }
 }
