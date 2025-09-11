@@ -22,9 +22,16 @@ impl log::Log for Logger {
             log::Level::Debug => ("DEBUG", Color::Cyan),
             log::Level::Trace => ("TRACT", Color::White),
         };
-        let mut str = format!("{}: {}", level, record.args());
-        if let (Some(f), Some(l)) = (record.file(), record.line()) {
-            str = format!("{str}    ===> ({f}:{l})");
+        let is_record = record.target() == "log:record";
+        let mut str = if is_record {
+            format!("{}", record.args())
+        } else {
+            format!("{}: {}", level, record.args())
+        };
+        if !is_record {
+            if let (Some(f), Some(l)) = (record.file(), record.line()) {
+                str = format!("{str}    ===> ({f}:{l})");
+            }
         }
         println!("{}", str.color(color));
         if let Err(e) = logwriter::write(str) {

@@ -109,7 +109,7 @@ impl syn::parse::Parse for Args {
             }
         }
         // 如果只有一个参数，则认为是dir
-        let (task, dir) = if p2 == None && p1 != None {
+        let (task, dir) = if p2.is_none() && p1.is_some() {
             (None, p1)
         } else {
             (p1, p2)

@@ -38,11 +38,8 @@ if_feature!("logfile" =>
      * 日志数据传递
      */
     pub(crate) fn write<S: Into<String>>(s: S) -> Result<()> {
-        match LOG_SENDER.get() {
-            Some(tx) => {
-                tx.send(s.into())?;
-            }
-            None => {},
+        if let Some(tx) = LOG_SENDER.get() {
+            tx.send(s.into())?;
         }
         Ok(())
     }

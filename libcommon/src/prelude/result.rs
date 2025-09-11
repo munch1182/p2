@@ -9,16 +9,29 @@ pub type Err = anyhow::Error;
  */
 pub type Result<T> = std::result::Result<T, Err>;
 
-/**
- * 创建一个新的Err
- */
+///
+///
+/// 创建一个新的Err
+///
+/// 支持:
+/// ```ignore
+///
+/// newerr!("{}, {}", a, b)
+/// newerr!("{a}")
+/// newerr!(Err::NewErr) => newerr!("{:?}", Err::NewErr)
+/// newerr!(a) => newerr!("{a:?}")
+///```
+///
 #[macro_export]
 macro_rules! newerr {
-    ($msg:expr) => {
-        $crate::prelude::Err::msg($msg.to_string())
+    ($fmt:literal) => {
+        $crate::prelude::Err::msg(format!($fmt))
     };
-    ($($arg:tt)*) => {
-        $crate::prelude::Err::msg(format!($($arg)*))
+    ($fmt:literal, $($arg:tt)*) => {
+        $crate::prelude::Err::msg(format!($fmt, $($arg)*))
+    };
+    ($err:expr) => {
+        $crate::prelude::Err::msg(format!("{:?}", $err))
     };
 }
 
@@ -26,11 +39,11 @@ pub trait IgnoreErrExt {
     /**
      * 如果返回Err，则忽略并打印错误信息
      */
-    fn ignore_value_err_by_log(self);
+    fn ignore(self);
 }
 
 impl<T> IgnoreErrExt for Result<T> {
-    fn ignore_value_err_by_log(self) {
+    fn ignore(self) {
         match self {
             Ok(_) => {}
             std::result::Result::Err(e) => log::warn!("err: {e}"),
@@ -47,21 +60,21 @@ pub trait ErrMapperExt<T> {
 
 impl<T> ErrMapperExt<T> for LockResult<T> {
     fn map_err_ext(self) -> Result<T> {
-        self.map_err(|e| newerr!("err: {}", e))
+        self.map_err(|e| newerr!(e))
     }
 }
 
 impl<T> ErrMapperExt<T> for std::thread::Result<T> {
     fn map_err_ext(self) -> Result<T> {
-        self.map_err(|e| newerr!("thread err: {:?}", e))
+        self.map_err(|e| newerr!(e))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::log::log_setup;
-
     use super::*;
+    use crate::log::log_setup;
+    use log::debug;
 
     #[derive(Debug)]
     enum NewErr {
@@ -80,7 +93,7 @@ mod tests {
     fn test_ignore_value_err_by_log() -> Result<()> {
         log_setup();
         let err: Result<()> = Err(newerr!("realy error"));
-        err.ignore_value_err_by_log();
+        err.ignore();
         Ok(())
     }
 
@@ -91,6 +104,22 @@ mod tests {
     fn test_convert() {
         let result = _convert_err_to_anyhow();
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_newerr() {
+        log_setup();
+        let err: Result<()> = Err(newerr!(NewErr::NewErr));
+        debug!("{:#?}", err);
+        assert!(err.is_err());
+        let a = 1;
+        let err: Result<()> = Err(newerr!(a));
+        // debug!("{err:?}");
+        assert!(err.is_err());
+        let a = 2;
+        let err: Result<()> = Err(newerr!("{a}"));
+        debug!("{err:#?}");
+        assert!(err.is_err());
     }
 
     fn _convert_err_to_anyhow() -> Result<()> {

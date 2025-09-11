@@ -10,6 +10,18 @@ pub use logwriter::{LogWriterTask, log_flush, log_setup_with_writer};
 #[cfg(feature = "logfile_default")]
 pub use logwriter_default::LogWriterDefaultTask;
 
+#[macro_export]
+macro_rules! record {
+    // info!(logger: my_logger, key1 = 42, key2 = true; "a {} event", "log")
+    // info!(logger: my_logger, "a {} event", "log")
+    (logger: $logger:expr, $($arg:tt)+) => ({
+        info!(target: "log:record", $logger, $($arg)+)
+    });
+
+    // info!("a {} event", "log")
+    ($($arg:tt)+) => (info!(target:"log:record", $($arg)+))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -18,6 +30,8 @@ mod tests {
     #[test]
     fn test_log() {
         log_setup();
+
+        record!("test log record");
 
         trace!("test log trace");
         debug!("test log debug");
