@@ -23,7 +23,7 @@ mod tests {
     use std::hash::{DefaultHasher, Hash, Hasher};
 
     #[test]
-    fn test_hash() -> std::io::Result<()> {
+    fn test_hash() {
         let a = "aaaaaaaaaa";
         let b = "bbbbbbbbbb";
         let c = "cccccccccc";
@@ -32,6 +32,5 @@ mod tests {
         b.hash(&mut hasher);
         c.hash(&mut hasher);
         assert_eq!(hash!(a, b, c), hasher.finish());
-        Ok(())
     }
 }

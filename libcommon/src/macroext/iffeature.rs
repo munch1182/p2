@@ -6,13 +6,12 @@
 /// use libcommon::if_feature;
 ///
 /// if_feature!(not("logfile") =>
-///     
 ///    use std::fs;
 ///    pub fn test() {
 ///    }
 /// );
+///
 /// if_feature!("logfile" =>
-///     
 ///    use std::fs;
 ///    pub fn test() {
 ///    }

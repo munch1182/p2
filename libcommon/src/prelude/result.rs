@@ -55,18 +55,24 @@ pub trait ErrMapperExt<T> {
     /**
      * 转变Err类型
      */
-    fn map_err_ext(self) -> Result<T>;
+    fn newerr(self) -> Result<T>;
 }
 
 impl<T> ErrMapperExt<T> for LockResult<T> {
-    fn map_err_ext(self) -> Result<T> {
+    fn newerr(self) -> Result<T> {
         self.map_err(|e| newerr!(e))
     }
 }
 
 impl<T> ErrMapperExt<T> for std::thread::Result<T> {
-    fn map_err_ext(self) -> Result<T> {
+    fn newerr(self) -> Result<T> {
         self.map_err(|e| newerr!(e))
+    }
+}
+
+impl<T> ErrMapperExt<T> for Option<T> {
+    fn newerr(self) -> Result<T> {
+        self.ok_or_else(|| newerr!("err from None"))
     }
 }
 

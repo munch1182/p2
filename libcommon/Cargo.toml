@@ -9,10 +9,11 @@ log = "0.4"
 macro_timer = { path = "./macro_timer" }
 macro_logiferr = { path = "./macro_logiferr" }
 macro_log = { path = "./macro_log" }
+macro_builder = { path = "./macro_builder" }
 colored = "3.0"
 crossbeam-channel = "0.5"
 chrono = "0.4"
-tokio = { version = "1.47", optional = true }
+tokio = { version = "1", optional = true }
 
 [features]
 logfile = []

@@ -12,14 +12,17 @@ pub use logwriter_default::LogWriterDefaultTask;
 
 #[macro_export]
 macro_rules! record {
+    ($fmt:literal) => {
+       $crate::prelude::debug!(target: "log:record", "{}", format!($fmt))
+    };
     // info!(logger: my_logger, key1 = 42, key2 = true; "a {} event", "log")
     // info!(logger: my_logger, "a {} event", "log")
     (logger: $logger:expr, $($arg:tt)+) => ({
-        info!(target: "log:record", $logger, $($arg)+)
+        $crate::prelude::debug!(target: "log:record", $logger, $($arg)+)
     });
 
     // info!("a {} event", "log")
-    ($($arg:tt)+) => (info!(target:"log:record", $($arg)+))
+    ($($arg:tt)+) => ({$crate::prelude::debug!(target:"log:record", $($arg)+)})
 }
 
 #[cfg(test)]
@@ -32,6 +35,8 @@ mod tests {
         log_setup();
 
         record!("test log record");
+        let a = 1;
+        record!("{a}");
 
         trace!("test log trace");
         debug!("test log debug");

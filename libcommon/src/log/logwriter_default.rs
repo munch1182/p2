@@ -9,11 +9,12 @@ if_feature!("logfile_default" =>
     /// 使用此实现需要tokio运行时
     ///
     /// # example
+    ///
     /// ```ignore
-    /// use libcommon::log::LogWriterDefaultTask;
+    /// use libcommon::log::{LogWriterDefaultTask, log_setup_with_writer};
     /// #[tokio::main]
     /// async fn main() {
-    ///    libcommon::log_(LogWriterDefaultTask);
+    ///    log_setup_with_writer(&LogWriterDefaultTask, ".log");
     /// }
     /// ```
     ///

@@ -31,7 +31,7 @@ if_feature!("logfile" =>
         },
     };
 
-    use crate::{ext::WriteAppendExt, log::log_setup_result, newerr, prelude::*};
+    use crate::{ext::WriteAppendExt, log::log_setup_result, prelude::*};
     use crossbeam_channel::{Receiver, Sender, bounded};
 
     /**
@@ -82,7 +82,7 @@ if_feature!("logfile" =>
         let (tx, rx) = bounded::<String>(5);
 
         // 失败说明已经设置了
-        let _ = LOG_SENDER.set(tx).map_err(|e| newerr!("set err {:?}", e));
+        let _ = LOG_SENDER.set(tx);
 
         let runner = LogRunner::new(dir.as_ref().to_path_buf(), rx);
         executor.spawn(async move { runner.run() });
@@ -134,7 +134,7 @@ if_feature!("logfile" =>
                 loop {
                     match rx.recv() {
                         Ok(s) => {
-                            // 空白字符作为退出机制 // 日志因为附加信息的存在，不可能是空白字符
+                            // 空白字符作为退出机制 // 日志因为附加信息的存在，正常消息不可能是空白字符
                             if s.is_empty() {
                                 break;
                             }
@@ -143,7 +143,7 @@ if_feature!("logfile" =>
                                 eprintln!("write log error: {e}");
                             }
                         }
-                        std::result::Result::Err(e) => {
+                        Err(e) => {
                             println!("log runner exit: {e}");
                             break;
                         }
@@ -158,7 +158,7 @@ if_feature!("logfile" =>
             let mut file_path: Option<PathBuf> = None;
             // 代码分段减少锁持有时间
             {
-                let curr_file = self.curr_file.read().map_err_ext()?;
+                let curr_file = self.curr_file.read().newerr()?;
                 let curr_size = self.curr_size.load(Ordering::Relaxed);
                 match curr_file.as_ref() {
                     Some(curr) => {
@@ -175,7 +175,7 @@ if_feature!("logfile" =>
 
             if need_new_file {
                 let new_file = self.new_file()?;
-                let mut currlock = self.curr_file.write().map_err_ext()?;
+                let mut currlock = self.curr_file.write().newerr()?;
                 *currlock = Some(new_file.clone());
                 file_path = Some(new_file.clone());
                 curr_size = 0;
@@ -193,7 +193,7 @@ if_feature!("logfile" =>
         }
 
         fn new_file(&self) -> Result<PathBuf> {
-            let path = self.dir.read().map_err_ext()?.clone();
+            let path = self.dir.read().newerr()?.clone();
             let name = chrono::Local::now()
                 .format("log_%Y%m%d%H%M.txt")
                 .to_string();
