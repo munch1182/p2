@@ -2,7 +2,7 @@ mod result;
 
 pub use crate::prelude::result::{Err, ErrMapperExt, IgnoreErrExt, Result};
 pub use log::{debug, error, info, trace, warn};
-pub use macro_builder::{Builder, With};
+pub use macro_builder::{Builder, Default_With, With};
 pub use macro_log::logsetup;
 pub use macro_logiferr::logiferr;
 pub use macro_timer::timer;

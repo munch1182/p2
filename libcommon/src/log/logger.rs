@@ -28,10 +28,8 @@ impl log::Log for Logger {
         } else {
             format!("{}: {}", level, record.args())
         };
-        if !is_record {
-            if let (Some(f), Some(l)) = (record.file(), record.line()) {
-                str = format!("{str}    ===> ({f}:{l})");
-            }
+        if !is_record && let (Some(f), Some(l)) = (record.file(), record.line()) {
+            str = format!("{str}    ===> ({f}:{l})");
         }
         println!("{}", str.color(color));
         if let Err(e) = logwriter::write(str) {
