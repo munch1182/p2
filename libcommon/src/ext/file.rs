@@ -90,13 +90,25 @@ impl<P: AsRef<Path>> FileDirCreateExt for P {
 ///
 /// `FIND`: 判断条件
 pub trait FileFinderExt<FIND: Fn(&Path) -> bool> {
+    /// 递归查找当前目录下满足条件的文件
+    /// 会查找所有子文件夹
+    fn find_file(&self, find: FIND) -> Vec<PathBuf> {
+        self.find(true, true, find)
+    }
     /// 递归查找当前目录下满足条件的文件和文件夹
-    fn find(&self, find: FIND) -> Vec<PathBuf>;
-    /// 仅查找当前目录下满足条件的文件和文件夹（非递归）
-    fn find_curr(&self, find: FIND) -> Vec<PathBuf>;
+    ///
+    /// `alldir`: 跳过文件夹检查，为[true]时，会查找所有文件夹
+    /// `recursive`: 是否递归查找, 为[true]时，会递归查找所有子文件夹
+    /// `find`: 判断条件
+    fn find(&self, alldir: bool, recursive: bool, find: FIND) -> Vec<PathBuf>;
 }
 
-fn _find(path: &Path, find: &impl Fn(&Path) -> bool, recursive: bool) -> Vec<PathBuf> {
+fn _find(
+    path: &Path,
+    alldir: bool,
+    recursive: bool,
+    find: &impl Fn(&Path) -> bool,
+) -> Vec<PathBuf> {
     let mut results = Vec::new();
 
     if path.is_file() {
@@ -106,27 +118,27 @@ fn _find(path: &Path, find: &impl Fn(&Path) -> bool, recursive: bool) -> Vec<Pat
         return results;
     }
 
+    if !path.is_dir() {
+        return results;
+    }
+
     if let Ok(entries) = fs::read_dir(path) {
         for entry in entries.flatten() {
             let entry_path = entry.path();
-            if find(&entry_path) {
-                results.push(entry_path.clone());
-            }
-
-            if recursive && entry_path.is_dir() {
-                results.extend(_find(&entry_path, find, recursive));
+            // 需要对文件夹也进行判断
+            if entry_path.is_file() && find(&entry_path) {
+                results.push(entry_path);
+            } else if entry_path.is_dir() && recursive && (alldir || find(&entry_path)) {
+                results.extend(_find(&entry_path, alldir, recursive, find));
             }
         }
     }
     results
 }
-impl<P: AsRef<Path>, FIND: Fn(&Path) -> bool> FileFinderExt<FIND> for P {
-    fn find(&self, find: FIND) -> Vec<PathBuf> {
-        _find(self.as_ref(), &find, true)
-    }
 
-    fn find_curr(&self, find: FIND) -> Vec<PathBuf> {
-        _find(self.as_ref(), &find, false)
+impl<P: AsRef<Path>, FIND: Fn(&Path) -> bool> FileFinderExt<FIND> for P {
+    fn find(&self, alldir: bool, recursive: bool, find: FIND) -> Vec<PathBuf> {
+        _find(self.as_ref(), alldir, recursive, &find)
     }
 }
 
@@ -147,18 +159,32 @@ mod tests {
     #[test]
     fn test_find() -> Result<()> {
         let parent = curr_dir!("test_a")?.create_dir()?;
-        let _ = curr_dir!("test_a", "b2")?.create_dir()?;
         let dir = curr_dir!(&parent, "b")?.create_dir()?;
         fs::write(dir.join("a.aaa"), b"")?;
         let dir2 = dir.join("c").create_dir()?;
         fs::write(dir2.join("b.aaa"), b"")?;
+        let di3 = curr_dir!("test_a", "b2")?.create_dir()?;
+        fs::write(di3.join("b.aaa"), b"")?;
 
-        let res = parent.find(|p| p.extension().unwrap_or_default() == "aaa");
-        assert!(res.len() == 2);
-        let res = parent.find_curr(|p| p.extension().unwrap_or_default() == "aaa");
-        assert!(res.is_empty());
-        let res = parent.find(|p| p.extension().unwrap_or_default() == "aaa1");
-        assert!(res.is_empty());
+        let res = parent.find_file(|p| p.extension().unwrap_or_default() == "aaa");
+        assert_eq!(res.len(), 3);
+
+        let res = parent.find(false, true, |p| {
+            if p.is_file() {
+                p.extension().unwrap_or_default() == "aaa"
+            } else if p.is_dir() {
+                p.file_name()
+                    .map(|s| s.to_string_lossy())
+                    .unwrap_or_default()
+                    .ends_with("2")
+            } else {
+                false
+            }
+        });
+        assert_eq!(res.len(), 1);
+
+        let res = parent.find(true, false, |p| p.extension().unwrap_or_default() == "aaa");
+        assert_eq!(res.len(), 0);
 
         let _ = fs::remove_dir_all(parent);
         Ok(())
