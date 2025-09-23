@@ -1,3 +1,5 @@
+//！日志相关
+
 pub(crate) mod logger;
 pub(crate) mod logwriter;
 pub(crate) mod logwriter_default;
@@ -10,6 +12,7 @@ pub use logwriter::{LogWriterTask, log_flush, log_setup_with_writer};
 #[cfg(feature = "logfile_default")]
 pub use logwriter_default::LogWriterDefaultTask;
 
+/// 日志记录宏，使用`debug`打印日志且不会输出调用地址
 #[macro_export]
 macro_rules! record {
     ($fmt:literal) => {

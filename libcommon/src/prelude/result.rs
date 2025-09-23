@@ -1,12 +1,11 @@
 use std::sync::LockResult;
 
-/**
- * 使用anyhow::Error作为错误类型方便转化
- */
+/// 使用[anyhow::Error]作为错误类型方便转化
 pub type Err = anyhow::Error;
-/**
- * 使用自定义类型Err实现std::fmt::Display和std::error::Error即可
- */
+///
+/// 使用[crate::prelude::Err]作为错误类型
+///
+/// 如果使用自定义类型Err方便转换，需要自定义Err实现std::fmt::Display和std::error::Error
 pub type Result<T> = std::result::Result<T, Err>;
 
 ///
@@ -15,7 +14,6 @@ pub type Result<T> = std::result::Result<T, Err>;
 ///
 /// 支持:
 /// ```ignore
-///
 /// newerr!("{}, {}", a, b)
 /// newerr!("{a}")
 /// newerr!(Err::NewErr) => newerr!("{:?}", Err::NewErr)
@@ -35,36 +33,41 @@ macro_rules! newerr {
     };
 }
 
-pub trait IgnoreErrExt {
-    /**
-     * 如果返回Err，则忽略并打印错误信息
-     */
-    fn ignore(self);
-}
-
-impl<T> IgnoreErrExt for Result<T> {
-    fn ignore(self) {
-        match self {
-            Ok(_) => {}
-            std::result::Result::Err(e) => log::warn!("err: {e}"),
-        };
-    }
-}
-
+/// 错误类型转换，将不支持自动转换的常用错误类型手动转换
 pub trait ErrMapperExt<T> {
-    /**
-     * 转变Err类型
-     */
     fn newerr(self) -> Result<T>;
 }
 
 impl<T> ErrMapperExt<T> for LockResult<T> {
+    ///
+    /// 将[std::sync::LockResult]转换为[Result]
+    ///
+    /// # example
+    /// ```ignore
+    /// use std::sync::{Arc, Mutex};
+    /// use libcommon::prelude::{Result, ErrMapperExt};
+    ///
+    /// let mutex = Arc::new(Mutex::new(1));
+    /// let result: Result<()> = mutex.lock().newerr();
+    /// assert!(result.is_ok());
+    /// ```
     fn newerr(self) -> Result<T> {
         self.map_err(|e| newerr!(e))
     }
 }
 
 impl<T> ErrMapperExt<T> for std::thread::Result<T> {
+    ///
+    /// 将[std::thread::Result]转换为[Result]
+    ///
+    /// # example
+    /// ```
+    /// use std::thread;
+    /// use libcommon::prelude::{Result, ErrMapperExt};
+    ///
+    /// let result: Result<()> = thread::spawn(|| ()).join().newerr();
+    /// assert!(result.is_ok());
+    /// ```
     fn newerr(self) -> Result<T> {
         self.map_err(|e| newerr!(e))
     }
@@ -95,17 +98,6 @@ mod tests {
 
     impl std::error::Error for NewErr {}
 
-    #[test]
-    fn test_ignore_value_err_by_log() -> Result<()> {
-        log_setup();
-        let err: Result<()> = Err(newerr!("realy error"));
-        err.ignore();
-        Ok(())
-    }
-
-    /**
-     * 测试将NewErr转换为anyhow::Error
-     */
     #[test]
     fn test_convert() {
         let result = _convert_err_to_anyhow();

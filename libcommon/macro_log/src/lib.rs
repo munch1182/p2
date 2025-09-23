@@ -3,15 +3,15 @@ use quote::quote;
 use syn::Expr;
 
 ///
-/// 设置[log_setup](libcommon::log::log_setup)和[log_setup_with_writer](libcommon::log::log_setup_with_writer)
+/// 设置`libcommon::prelude::logsetup`和`libcommon::prelude::log_setup_with_writer`
 ///
-/// 当设置log_setup_with_writer时，会在函数结束时调用[log_flush](libcommon::log::log_flush)
+/// 当设置`log_setup_with_writer`时，会在函数结束时调用`log_flush`
 ///
 /// 为避免其它影响，该属性应该放在最前面，除非其它属性需要放在前面
 ///
 /// # example
 ///
-/// #### 默认实现，不使用logfile
+/// #### 默认实现，不使用`logfile`
 ///
 /// ```ignore
 /// #[logsetup]
@@ -19,7 +19,7 @@ use syn::Expr;
 /// }
 /// ```
 /// #### 配置参数并将日志写入文件
-/// featrues = [logfile]
+/// featrues = `[logfile]`
 /// ```ignore
 /// #[logsetup(&task, "logdir")]
 /// fn main() {
@@ -27,7 +27,7 @@ use syn::Expr;
 /// ```
 /// #### 使用默认task实现
 /// 默认使用tokio异步，因此需要其运行时
-/// feature = [logfile_default]
+/// feature = `[logfile_default]`
 /// ```ignore
 /// #[logsetup("logdir")]
 /// #[tokio::main]

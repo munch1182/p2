@@ -1,19 +1,20 @@
 use proc_macro::TokenStream;
 use quote::quote;
 
-/**
- * 对函数进行计时
- * 通过日志输出函数执行时间
- */
+///
+/// 对函数进行计时
+///
+/// 通过日志输出函数执行时间
 #[proc_macro_attribute]
 pub fn timer(_attr: TokenStream, item: TokenStream) -> TokenStream {
     generate_timer_code(item, false, "timer")
 }
 
-/**
- * 只在debug模式下对函数进行计时
- * 在release模式下会被完全移除
- */
+///
+/// 对函数进行计时
+///
+/// 只在`debug`模式下对函数进行计时
+/// 在`release`模式下会被完全移除
 #[proc_macro_attribute]
 pub fn timer_debug(_attr: TokenStream, item: TokenStream) -> TokenStream {
     generate_timer_code(item, true, "timer_debug")

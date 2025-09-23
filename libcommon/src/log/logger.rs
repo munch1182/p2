@@ -44,12 +44,17 @@ impl log::Log for Logger {
 
 static LOGGER: Logger = Logger;
 
-/**
- * 初始化日志
- * 如果已经初始化过日志会报错，忽略这个报错
- *
- * debug模式下会输出所有日志，否则会输出info及以上日志
- */
+/// 初始化日志
+///
+/// 如果已经初始化过日志会报错，忽略这个报错
+/// `debug`模式下会输出所有日志，否则会输出`info`及以上日志
+///
+/// # example
+///
+/// ```ignore
+/// logsetup();
+/// debug!("debug log");
+/// ```
 pub fn log_setup() {
     let result = log_setup_result();
     if let Err(e) = result {
@@ -57,12 +62,10 @@ pub fn log_setup() {
     }
 }
 
-/**
- * 初始化日志
- * 如果已经初始化过日志会报错
- *
- * debug模式下会输出所有日志，否则会输出info及以上日志
- */
+/// 初始化日志
+///
+/// 如果已经初始化过日志会报错
+/// `debug`模式下会输出所有日志，否则会输出`info`及以上日志
 pub fn log_setup_result() -> Result<()> {
     // 错误说明已经设置过
     log::set_logger(&LOGGER).map_err(|e| newerr!("log setup failed {:?}", e))?;

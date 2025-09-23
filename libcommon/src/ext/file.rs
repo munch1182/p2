@@ -5,17 +5,13 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/**
- * 追加写入文件
- */
+/// 追加写入文件
 pub trait WriteAppendExt {
     fn write_append(&mut self, buf: &[u8]) -> Result<()>;
 }
 
 impl<P: AsRef<Path>> WriteAppendExt for P {
-    /**
-     * 将数据追加到文件中
-     */
+    /// 将数据追加到文件中，只适合一次性写入
     fn write_append(&mut self, buf: &[u8]) -> Result<()> {
         let path = self.as_ref();
         path.create_parent()?;
@@ -28,6 +24,7 @@ impl<P: AsRef<Path>> WriteAppendExt for P {
     }
 }
 
+/// 添加多个路径
 pub trait PathJoinExt {
     fn join_all<P: AsRef<Path>>(self, path: &[P]) -> PathBuf;
 }
@@ -52,22 +49,20 @@ impl PathJoinExt for &Path {
     }
 }
 
-/**
- * 如果文件夹不存在，则创建文件夹
- */
+/// 如果文件夹不存在，则创建文件夹
 pub trait FileDirCreateExt
 where
     Self: Sized,
 {
+    /// 如果父文件夹不存在，则创建父文件夹
+    ///
+    /// 比如创建文件时，保证父文件夹存在
     fn create_parent(self) -> Result<Self>;
+    /// 如果当前文件夹不存在，则创建当前文件夹
     fn create_dir(self) -> Result<Self>;
 }
 
 impl<P: AsRef<Path>> FileDirCreateExt for P {
-    /**
-     * 如果父文件夹不存在，则创建父文件夹
-     * 比如创建文件时，保证父文件夹存在
-     */
     fn create_parent(self) -> Result<Self> {
         let path = self.as_ref();
         if path.exists() {
@@ -81,9 +76,6 @@ impl<P: AsRef<Path>> FileDirCreateExt for P {
         Ok(self)
     }
 
-    /**
-     * 如果当前文件夹不存在，则创建当前文件夹
-     */
     fn create_dir(self) -> Result<Self> {
         let path = self.as_ref();
         if path.exists() {
@@ -94,8 +86,13 @@ impl<P: AsRef<Path>> FileDirCreateExt for P {
     }
 }
 
+/// 查找当前目录下满足条件的文件和文件夹
+///
+/// `FIND`: 判断条件
 pub trait FileFinderExt<FIND: Fn(&Path) -> bool> {
+    /// 递归查找当前目录下满足条件的文件和文件夹
     fn find(&self, find: FIND) -> Vec<PathBuf>;
+    /// 仅查找当前目录下满足条件的文件和文件夹（非递归）
     fn find_curr(&self, find: FIND) -> Vec<PathBuf>;
 }
 
@@ -124,12 +121,10 @@ fn _find(path: &Path, find: &impl Fn(&Path) -> bool, recursive: bool) -> Vec<Pat
     results
 }
 impl<P: AsRef<Path>, FIND: Fn(&Path) -> bool> FileFinderExt<FIND> for P {
-    /// 递归查找当前目录下满足条件的文件和文件夹
     fn find(&self, find: FIND) -> Vec<PathBuf> {
         _find(self.as_ref(), &find, true)
     }
 
-    /// 仅查找当前目录下满足条件的文件和文件夹（非递归）
     fn find_curr(&self, find: FIND) -> Vec<PathBuf> {
         _find(self.as_ref(), &find, false)
     }

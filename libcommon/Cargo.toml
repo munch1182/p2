@@ -3,6 +3,9 @@ name = "libcommon"
 version = "0.1.0"
 edition = "2024"
 
+# doc: cargo doc --no-deps --open
+# 如果去除了已经生成的部分的文档，需要手动删掉缓存
+
 [dependencies]
 anyhow = "1.0"
 log = "0.4"
