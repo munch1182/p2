@@ -1,13 +1,15 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::Expr;
+
+use crate::parse::Args;
+mod parse;
 
 ///
 /// 设置`libcommon::prelude::logsetup`和`libcommon::prelude::log_setup_with_writer`
 ///
 /// 当设置`log_setup_with_writer`时，会在函数结束时调用`log_flush`
-///
-/// 为避免其它影响，该属性应该放在最前面，除非其它属性需要放在前面
+/// 
+/// 传入`level`的参数，会调用`libcommon::log::log_set_level`设置日志级别
 ///
 /// # example
 ///
@@ -34,86 +36,72 @@ use syn::Expr;
 /// async fn main() {
 /// }
 /// ```
+/// #### 设置最大level
+/// ```ignore
+/// #[logsetup("info")]
+/// #[tokio::main]
+/// async fn main() {
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn logsetup(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let input = syn::parse_macro_input!(item as syn::ItemFn);
     let args = syn::parse_macro_input!(attr as Args);
-    let fn_block = &input.block;
-    let fn_vis = &input.vis;
-    let fn_sig = &input.sig;
-    let fn_attrs: Vec<_> = input
+    let input_fn = syn::parse_macro_input!(item as syn::ItemFn);
+    logsetup_impl(input_fn, args)
+}
+
+fn logsetup_impl(input_fn: syn::ItemFn, args: Args) -> TokenStream {
+    // 提取函数的信息
+    let fn_vis = &input_fn.vis; // 可见性
+    let fn_sig = &input_fn.sig; // 函数签名
+    //let fn_name = &fn_sig.ident; // 函数名
+    let fn_block = &input_fn.block; // 函数体
+    let is_async_fn = fn_sig.asyncness.is_some(); // 是否是异步函数
+    let fn_attrs: Vec<_> = input_fn
         .attrs
         .iter()
         .filter(|a| !a.path().is_ident("logsetup"))
         .collect();
-    let is_async_fn = fn_sig.asyncness.is_some();
 
-    let quote = {
-        let setup_log = |task: Option<Expr>, dir: Expr| {
-            if let Some(task) = task {
-                quote! { libcommon::log::log_setup_with_writer(#task, #dir); }
-            } else {
-                quote! { libcommon::log::log_setup_with_writer(&libcommon::log::LogWriterDefaultTask, #dir); }
-            }
+    let execute_block = if is_async_fn {
+        quote! { (|| async move #fn_block)().await }
+    } else {
+        quote! { (|| #fn_block)() }
+    };
+
+    let log_setup = {
+        let task = match args.task {
+            Some(task) => quote! { #task },
+            None => quote! { &libcommon::log::LogWriterDefaultTask },
         };
-
-        let execute_block = if is_async_fn {
-            quote! { (|| async move #fn_block)().await }
-        } else {
-            quote! { (|| #fn_block)() }
+        let set_level = match args.level {
+            Some(level) => quote! { libcommon::log::log_set_level(#level) },
+            None => quote! {},
         };
-
-        match (args.task, args.dir) {
-            (task, Some(dir)) => {
-                let log_code = setup_log(task, dir);
+        match args.dir {
+            Some(dir) => {
                 quote! {
-                    #(#fn_attrs)*
-                    #fn_vis #fn_sig {
-                        #log_code;
-                        let result = #execute_block;
-                        libcommon::log::log_flush();
-                        result
-                    }
+                    libcommon::log::log_setup_with_writer(#task, #dir);
+                    #set_level;
+                    let result = #execute_block;
+                    libcommon::log::log_flush();
+                    result
                 }
             }
-            _ => {
+            None => {
                 quote! {
-                    #(#fn_attrs)*
-                    #fn_vis #fn_sig {
-                        libcommon::log::log_setup();
-                        #fn_block
-                    }
+                    libcommon::log::log_setup();
+                    #set_level;
+                    #execute_block
                 }
             }
         }
     };
-
-    quote.into()
-}
-
-#[derive(Debug)]
-struct Args {
-    task: Option<Expr>,
-    dir: Option<Expr>,
-}
-
-impl syn::parse::Parse for Args {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let mut p1 = None;
-        let mut p2 = None;
-        if !input.is_empty() {
-            p1 = Some(input.parse()?);
-            if !input.is_empty() {
-                let _: syn::Token![,] = input.parse()?;
-                p2 = Some(input.parse()?);
-            }
-        }
-        // 如果只有一个参数，则认为是dir
-        let (task, dir) = if p2.is_none() && p1.is_some() {
-            (None, p1)
-        } else {
-            (p1, p2)
-        };
-        Ok(Args { task, dir })
+    quote! {
+       #(#fn_attrs)*
+       #fn_vis #fn_sig {
+           #log_setup
+       }
     }
+    .into()
 }

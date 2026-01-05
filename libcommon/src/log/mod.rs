@@ -4,7 +4,7 @@ pub(crate) mod logger;
 pub(crate) mod logwriter;
 pub(crate) mod logwriter_default;
 
-pub use logger::{log_setup, log_setup_result};
+pub use logger::{log_setup, log_setup_result,log_set_level};
 
 #[cfg(feature = "logfile")]
 pub use logwriter::{LogWriterTask, log_flush, log_setup_with_writer};

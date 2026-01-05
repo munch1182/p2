@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use colored::{Color, Colorize};
 
 use crate::log::logwriter;
@@ -71,6 +73,10 @@ pub fn log_setup_result() -> Result<()> {
     log::set_logger(&LOGGER).map_err(|e| newerr!("log setup failed {:?}", e))?;
     _log_setup_level();
     Ok(())
+}
+
+pub fn log_set_level(level: &str) {
+    log::set_max_level(log::LevelFilter::from_str(level).expect("must be level str"));
 }
 
 #[cfg(debug_assertions)]
