@@ -10,13 +10,15 @@ pub mod prelude;
 mod macroext;
 
 pub use log::{log_setup, log_setup_result};
-pub use macro_builder::{Builder, Default_With, With};
+pub use macro_builder::{Builder, Default_With, Getter, With};
 pub use macro_log::logsetup;
 pub use macro_logiferr::logiferr;
 pub use macro_timer::timer;
 
 #[cfg(test)]
 mod tests {
+    use macro_builder::Getter;
+
     use crate::{Builder, With, log_setup, logiferr, newerr, prelude::Result, prelude::error};
 
     #[test]
@@ -43,7 +45,7 @@ mod tests {
     }
 
     #[allow(unused)]
-    #[derive(With, Builder, Default)]
+    #[derive(With, Builder, Default, Getter)]
     struct User {
         name: String,
         #[with(skip)]

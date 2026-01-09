@@ -64,12 +64,13 @@ impl Command {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::ext::PrettyStringExt;
 
     #[test]
     #[cfg(target_os = "windows")]
     fn test_command() {
+        use super::*;
+        use crate::ext::PrettyStringExt;
+
         fn test(mut cmd: std::process::Command) {
             let result = cmd
                 .output()
