@@ -1,4 +1,4 @@
-use macro_builder::{Builder, Default_With, With};
+use macro_builder::{Builder, Default_With, Getter, With};
 
 pub fn main() {
     let resp: Resp<'_, u8> = RespBuilder::new(0).data(1).build();
@@ -10,13 +10,17 @@ pub fn main() {
     let user = Data::default_with(NoDefaultStruct(1));
     assert!(user.no_default.0 == 1);
     assert!(user.default.0 == 1);
+
+    assert!(resp.get_msg().is_none());
+    assert!(resp.get_code() == 1);
 }
 
-#[derive(Builder, With)]
-struct Resp<'a, T> {
+#[derive(Builder, With, Getter)]
+pub struct Resp<'a, T> {
     code: u8,
     msg: Option<&'a str>,
     #[with(keep)]
+    #[getter(skip)]
     data: Option<T>,
 }
 

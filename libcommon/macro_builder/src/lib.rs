@@ -1,6 +1,15 @@
+//!
+//! 生成与字段相关的宏
+//! 
+//! `Default_with`, `Builder`用于创建；
+//! `With`用于修改；
+//! `Getter`用于获取;
+//! 
+
 use proc_macro::TokenStream;
 mod builder;
 mod default_with;
+mod getter;
 mod with;
 
 /// 生成的`Builder`结构和其对应的`new`方法、`build`方法以及[Option]字段的`setter`方法
@@ -27,6 +36,33 @@ mod with;
 #[proc_macro_derive(Builder)]
 pub fn derive_builder(input: TokenStream) -> TokenStream {
     builder::derive_builder_impl(input)
+}
+
+/// 为属性生成`get`方法用以获取
+/// 
+/// # example
+/// ```ignore
+/// #[derive(Getter)]
+/// struct User {
+///    name: String,
+///    age: u16,
+///    #[getter(skip)]
+///    agent: Option<bool>,
+/// }
+///
+/// let user = User {
+///    name: "Jack".to_string(),
+///    age: 22,
+///    agent: Some(true),
+/// }
+/// 
+/// user.get_name();
+/// user.get_age();
+/// 
+/// 
+#[proc_macro_derive(Getter, attributes(getter))]
+pub fn derive_getter(input: TokenStream) -> TokenStream {
+    getter::derive_getter_impl(input)
 }
 
 /// 为属性生成`with`方法用以替换
